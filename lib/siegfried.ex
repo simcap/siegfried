@@ -13,7 +13,7 @@ defmodule Siegfried do
 
   def run do
     routes = [
-      {"/ws", WsHandler, []}
+      {"/websocket", WsHandler, []}
     ]
 
     dispatch = :cowboy_router.compile([{:_, routes}])

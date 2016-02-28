@@ -1,3 +1,5 @@
+import Logger
+
 defmodule WsHandler do
   @behaviour :cowboy_websocket_handler
 
@@ -6,28 +8,27 @@ defmodule WsHandler do
   end
 
   def websocket_init(_transport_name, req, _opts) do
-    :erlang.start_timer(1000, self(), "Hello!")
+    {peer_id, _} = :cowboy_req.qs_val("id", req)
+    Process.register(self, String.to_atom(peer_id))
     {:ok, req, :undefined_state}
   end
 
   def websocket_handle({:text, msg}, req, state) do
-    {:reply, {:text, "That's what she said! #{msg}"}, req, state}
-  end
-
-  def websocket_handle(_data, req, state) do
+    [peer_id, content] = String.split(msg, ",", parts: 2)
+    receiver = String.to_atom(peer_id)
+    if Process.whereis(receiver) do
+      send receiver, {:message, receiver, content}
+    end
     {:ok, req, state}
   end
 
-  def websocket_info({:timeout, _ref, msg}, req, state) do
-    :erlang.start_timer(1000, self(), "How' you doin'?")
-    {:reply, {:text, msg}, req, state}
-  end
-
-  def websocket_info(_info, req, state) do
-    {:ok, req, state}
+  def websocket_info({:message, sender, content}, req, state) do
+    {:reply, {:text, content}, req, state}
   end
 
   def websocket_terminate(_reason, _req, _state) do
+    peer_id = Process.info(self)[:registered_name]
+    Process.unregister(peer_id)
     :ok
   end
 end
