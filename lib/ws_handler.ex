@@ -26,9 +26,7 @@ defmodule WsHandler do
     {:reply, {:text, content}, req, state}
   end
 
-  def websocket_terminate({:remote, code, payload}, req, state) do
-    peer_id = Process.info(self)[:registered_name]
-    Process.unregister(peer_id)
+  def websocket_terminate(reason, req, state) do
     :ok
   end
 end
