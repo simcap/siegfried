@@ -9,15 +9,15 @@ defmodule WsHandler do
 
   def websocket_init(_transport_name, req, _opts) do
     {peer_id, _} = :cowboy_req.qs_val("id", req)
-    Process.register(self, String.to_atom(peer_id))
+    :gproc.reg({:n, :l, peer_id})
     {:ok, req, :undefined_state}
   end
 
   def websocket_handle({:text, msg}, req, state) do
     [peer_id, content] = String.split(msg, ",", parts: 2)
-    receiver = String.to_atom(peer_id)
-    if Process.whereis(receiver) do
-      send receiver, {:message, receiver, content}
+    pid = :gproc.where({:n, :l, peer_id})
+    if pid != :undefined do
+      send pid, {:message, peer_id, content}
     end
     {:ok, req, state}
   end

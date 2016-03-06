@@ -15,7 +15,7 @@ defmodule Siegfried.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      applications: [:logger, :runtime_tools, :cowboy],
+      applications: [:logger, :runtime_tools, :cowboy, :gproc],
       mod: {Siegfried, []}
     ]
   end
@@ -30,6 +30,6 @@ defmodule Siegfried.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [ {:cowboy, "1.0.4"}, { :exrm, "~> 0.14.2" }]
+    [ {:cowboy, "1.0.4"}, { :exrm, "~> 0.14.2" }, { :gproc, "~> 0.5"} ]
   end
 end
