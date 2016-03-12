@@ -9,8 +9,8 @@ defmodule WsHandler do
 
   def websocket_init(_transport_name, req, _opts) do
     {peer_id, _} = :cowboy_req.qs_val("id", req)
-    :gproc.reg({:n, :l, peer_id})
-    {:ok, req, :undefined_state}
+    send self, {:register, peer_id}
+    {:ok, req, 0, 60000}
   end
 
   def websocket_handle({:text, msg}, req, state) do
@@ -19,11 +19,16 @@ defmodule WsHandler do
     if pid != :undefined do
       send pid, {:message, peer_id, content}
     end
+    {:ok, req, state + 1}
+  end
+
+  def websocket_info({:register, peer_id}, req, state) do
+    :gproc.reg({:n, :l, peer_id})
     {:ok, req, state}
   end
 
   def websocket_info({:message, sender, content}, req, state) do
-    {:reply, {:text, content}, req, state}
+    {:reply, {:text, content}, req, state + 1}
   end
 
   def websocket_terminate(reason, req, state) do
