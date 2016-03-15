@@ -10,7 +10,7 @@ defmodule WsHandler do
   def websocket_init(_transport_name, req, _opts) do
     {peer_id, _} = :cowboy_req.qs_val("id", req)
     send self, {:register, peer_id}
-    {:ok, req, 0, 60000}
+    {:ok, req, 0, 600000}
   end
 
   def websocket_handle({:text, msg}, req, state) do
